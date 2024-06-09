@@ -2,6 +2,7 @@ import datetime
 import time
 import math
 import sys
+import argparse
 
 def dateString_to_unix(stri):
     unix = math.floor(time.mktime(datetime.datetime.strptime(stri, "%Y-%m-%d").timetuple())/86400)
@@ -9,7 +10,7 @@ def dateString_to_unix(stri):
 
 EVENT = sys.argv[1] #333
 isAverage = (EVENT[-2:] == "_a")
-continentOrder = "1234567" if len(sys.argv) <= 2 else sys.argv[2]
+continentOrder = "1234567"
 # use this parameter to re-order the order the continents show up in, top-to-bottom
 C_COUNT = 7
 co2 = [None]*C_COUNT
@@ -17,7 +18,8 @@ for i in range(C_COUNT):
     val = int(continentOrder[i])-1
     co2[val] = str(i+1)
 
-
+# parse country id instead of continentOrder
+country_id = "FR" if len(sys.argv) <= 2 else sys.argv[2]
 
 continent_abbr = {"_Europe":co2[0],
 "_North America":co2[1],
@@ -130,8 +132,9 @@ with open("data/WCA_export_Results.tsv", encoding="utf-8") as infile:
                 year = cid_to_year[cid]
                 wcaid = parts[7]
                 caryid = wcaid_to_country[wcaid]+"-"+wcaid
-                
-                
+                country = wcaid_to_country[wcaid]
+                if country != ('1' + country_id):
+                    continue
                 if year in lists:
                     list_ = lists[year]
                     

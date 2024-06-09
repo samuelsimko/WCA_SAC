@@ -2,11 +2,14 @@ from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw 
 import numpy as np
+import matplotlib as mpl
 import math
 from unidecode import unidecode
 import sys
 
 EVENT = sys.argv[1] #333
+# Country name to be shown
+country_name = (sys.argv[2] if len(sys.argv) >= 2 else "")
 isAverage = (EVENT[-2:] == "_a")
 
 START_YEAR = 2003
@@ -302,7 +305,8 @@ def drawShapes(cubers, draw):
             p1 = (yr_to_x(yr+FLAT_MARGIN),n_to_y(n1))
             q0 = (yr_to_x(yr-FLAT_MARGIN),n_to_y(n2))
             q1 = (yr_to_x(yr+FLAT_MARGIN),n_to_y(n2))
-            color = caryid_to_color(caryid)
+            # color = caryid_to_color(caryid)
+            color = caryid_to_color_custom(caryid)
             
             if n2 > n1:
                 draw.polygon([p0,p1,q1,q0], fill=color)
@@ -364,8 +368,8 @@ def getEventName():
             return parts[1]
 
 def drawTitle(cubers, draw):
-    types = "averages" if isAverage else "singles"
-    centerText((W_W/2,n_to_y(-3)), f"{LIST_N} best {getEventName()} WCA {types}, per year", draw, 60, (0,0,0))
+    types = ("averages" if isAverage else "singles")
+    centerText((W_W/2,n_to_y(-3)), f"{LIST_N} best {country_name} {getEventName()} WCA {types}, per year", draw, 60, (0,0,0))
                 
 def drawYears(cubers, draw):
     for yr in range(LEN):
@@ -425,13 +429,43 @@ def loadCubers(lists):
                 
     return cubers
 
+def min_by_competitor(lists):
+    """Return a dictionary where the keys are caryids and the values are the minimum time for that competitor."""
+    sums = {}
+    for li in lists:
+        for ele in li:
+            time = int(ele[0])
+            caryid = ele[1]
+            if caryid not in sums:
+                sums[caryid] = time
+            else:
+                sums[caryid] = min(sums[caryid], time)
+    return sums
+
+
+def caryid_to_color_custom(caryid):
+    """Return a color based on the miminum time of the competitor. The color is based on a rainbow colormap."""
+    cmap = mpl.cm.rainbow.reversed()
+    norm = mpl.colors.Normalize(vmin=val_min, vmax=val_max)
+
+    if "EMPTY" in caryid:
+        return (128,128,128)
+    color = cmap(norm(min_by_comp[caryid]))
+    # convert to 0-255
+    color = tuple([int(255*x) for x in color[:3]])
+    return color
+
 
 lists = loadLists()
 cubers = loadCubers(lists)
+min_by_comp = min_by_competitor(lists)
+val_max = max(min_by_comp.values())
+val_min = min(min_by_comp.values())
+
 img = Image.new(mode="RGB", size=(W_W, W_H), color=(255,255,255))
 draw = ImageDraw.Draw(img)
 drawShapes(cubers, draw)
 drawLabels(cubers, draw)
-drawTitle(cubers, draw)    
-drawYears(cubers, draw)    
-img.save(f"SAC_graph_{EVENT}.png")
+drawTitle(cubers, draw)
+drawYears(cubers, draw)
+img.save(f"pdfs/SAC_graph_{EVENT}_{country_name}.pdf")

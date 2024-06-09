@@ -1,8 +1,29 @@
 # Stacked Area Charts of Top WCA solves
-
-Creates a Stacked Area Chart of the 100 best WCA results of an event, per year!
-
+ 
+Creates a Stacked Area Chart of the 100 best CA results of an event, per year!
 ![a stacked area chart of the top 100 3x3 solves per year](SAC_graph_333.png)
+
+# About this Fork
+
+This fork was made to add the ability to create charts specific to one country.
+The country is specified by the country code (e.g. FR, US, CH, etc.).
+To use this feature, you can use the country code as the second argument of the `create_top_100.py` script,
+and the country's name as a second argument of the `create_graph.py` script.
+
+```
+python create_top100.py 333 FR
+```
+```
+python create_graph.py 333 France
+```
+
+Alternatively, you can use the `run_all.sh` script to create the charts for all events.
+
+```
+./run_all.sh FR France
+```
+
+The `pdfs` folder will contain the pdfs of the charts for each event.
 
 ## Steps for setup:
 * 1. Download this repo.
